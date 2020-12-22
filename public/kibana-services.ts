@@ -8,7 +8,9 @@ import {
   ScopedHistory,
 } from 'kibana/public';
 import { createGetterSetter } from '../../../src/plugins/kibana_utils/common';
-import { DataPublicPluginStart } from '../../../src/plugins/data/public';
+import { DataPublicPluginStart, IndexPatternsContract } from '../../../src/plugins/data/public';
+import {  } from '../../../src/plugins/data/public';
+import { create } from 'src/plugins/data/common/search/aggs/metrics/lib/get_response_agg_config_class';
 import { VisualizationsStart } from '../../../src/plugins/visualizations/public';
 import { NavigationPublicPluginStart } from '../../../src/plugins/navigation/public';
 
@@ -24,6 +26,10 @@ export const [getSavedObjects, setSavedObjects] = createGetterSetter<SavedObject
 export const [getDataPlugin, setDataPlugin] = createGetterSetter<DataPublicPluginStart>(
   'DataPlugin'
 );
+export const [getIndexPattern, setIndexPattern] = createGetterSetter<IndexPatternsContract>(
+  'IndexPattern'
+);
+
 export const [getVisualizationsPlugin, setVisualizationsPlugin] = createGetterSetter<
   VisualizationsStart
 >('VisualizationsPlugin');
