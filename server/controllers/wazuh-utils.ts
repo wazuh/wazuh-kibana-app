@@ -17,9 +17,8 @@ import { read } from 'read-last-lines';
 import path from 'path';
 import { UpdateConfigurationFile } from '../lib/update-configuration';
 import jwtDecode from 'jwt-decode';
-import { WAZUH_ROLE_ADMINISTRATOR_ID } from '../../util/constants';
+import { WAZUH_ROLE_ADMINISTRATOR_ID, WAZUH_DATA_LOGS_RAW_PATH } from '../../util/constants';
 import { ManageHosts } from '../lib/manage-hosts';
-import { ApiInterceptor } from '../lib/api-interceptor';
 import { KibanaRequest, RequestHandlerContext, KibanaResponseFactory } from 'src/core/server';
 import { getCookieValueByName } from '../lib/cookie';
 
@@ -32,7 +31,6 @@ export class WazuhUtilsCtrl {
    */
   constructor(server) {
     this.manageHosts = new ManageHosts();
-    this.apiInterceptor = new ApiInterceptor();
   }
 
   /**
@@ -80,12 +78,11 @@ export class WazuhUtilsCtrl {
         return ErrorResponse('No administrator role', 401, 401, response);
       };response
       // Check the provided token is valid
-      const idHost = getCookieValueByName(request.headers.cookie,'wz-api');
-      if( !idHost ){
+      const apiHostID = getCookieValueByName(request.headers.cookie,'wz-api');
+      if( !apiHostID ){
         return ErrorResponse('No API id provided', 401, 401, response);
       };
-      const api = await this.manageHosts.getHostById(idHost);
-      const responseTokenIsWorking = await this.apiInterceptor.requestToken('GET', `${api.url}:${api.port}//`, {}, {idHost}, token);
+      const responseTokenIsWorking = await context.wazuh.api.client.asCurrentUser.request('GET', '//', {}, {apiHostID});
       if(responseTokenIsWorking.status !== 200){
         return ErrorResponse('Token is not valid', 401, 401, response);
       };
@@ -112,7 +109,7 @@ export class WazuhUtilsCtrl {
   async getAppLogs(context: RequestHandlerContext, request: KibanaRequest, response: KibanaResponseFactory) {
     try {
       const lastLogs = await read(
-        path.join(__dirname, '../../../../optimize/wazuh/logs/wazuhapp.log'),
+        WAZUH_DATA_LOGS_RAW_PATH,
         50
       );
       const spliterLog = lastLogs.split('\n');

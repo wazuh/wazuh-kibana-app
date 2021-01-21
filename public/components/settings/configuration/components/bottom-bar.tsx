@@ -14,7 +14,7 @@
 import React, { } from 'react';
 import ConfigurationHandler from '../utils/configuration-handler';
 //@ts-ignore
-import { toastNotifications } from 'ui/notify';
+import { setToasts } from '../../../../kibana-services';
 import { ISetting } from '../configuration'
 import {
   EuiBottomBar,
@@ -67,7 +67,6 @@ const CancelButton = ({ setUpdateConfig }) => (
       iconSide='left'
       iconType='cross'
       color="ghost"
-      className="mgtAdvancedSettingsForm__button"
       onClick={() => setUpdateConfig({})}>
       Cancel changes
     </EuiButtonEmpty>
@@ -82,7 +81,6 @@ const SaveButton = ({ updatedConfig, setUpdateConfig, setLoading, config }) => (
       iconSide='left'
       iconType='check'
       color='secondary'
-      className="mgtAdvancedSettingsForm__button"
       onClick={() => saveSettings(updatedConfig, setUpdateConfig, setLoading, config)} >
       Save changes
       </EuiButton>
@@ -106,11 +104,11 @@ const saveSetting = async (setting, updatedConfig, config:ISetting[]) => {
   try{
     (config.find(item => item.setting === setting) || {value:''}).value = updatedConfig[setting];
     const result = await ConfigurationHandler.editKey(setting, updatedConfig[setting]);
-    
+
     // Update the app configuration frontend-cached setting in memory with the new value
     const wzConfig = new WazuhConfig();
     wzConfig.setConfig({...wzConfig.getConfig(), ...{[setting]: formatValueCachedConfiguration(updatedConfig[setting])}});
-    
+
     // Show restart and/or reload message in toast
     const response = result.data.data;
     response.needRestart && restartToast();
@@ -121,7 +119,7 @@ const saveSetting = async (setting, updatedConfig, config:ISetting[]) => {
 }
 
 const reloadToast = () => {
-  toastNotifications.add({
+  setToasts({
     color: 'success',
     title: 'This settings require you to reload the page to take effect.',
     text: <EuiFlexGroup justifyContent="flexEnd" gutterSize="s">
@@ -133,21 +131,21 @@ const reloadToast = () => {
 }
 
 const restartToast = () => {
-  toastNotifications.add({
+  setToasts({
     color:'warning',
     title:'You must restart Kibana for the changes to take effect',
   });
 }
 
 const successToast = () => {
-  toastNotifications.add({
+  setToasts({
     color:'success',
     title:'The configuration has been successfully updated',
   });
 }
 
 const errorToast = (error) => {
-  toastNotifications.add({
+  setToasts({
     color:'danger',
     title:`Error saving the configuration: ${error.message || error}`,
   });
