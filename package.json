@@ -1,6 +1,6 @@
 {
   "name": "wazuh",
-  "version": "4.2.0",
+  "version": "4.1.4",
   "revision": "4201",
   "code": "4201-0",
   "kibana": {
@@ -58,7 +58,8 @@
     "react-cookie": "^4.0.3",
     "read-last-lines": "^1.7.2",
     "timsort": "^0.3.0",
-    "winston": "3.0.0"
+    "winston": "3.0.0",
+    "yarn": "^1.22.10"
   },
   "devDependencies": {
     "@types/node-cron": "^2.0.3",
