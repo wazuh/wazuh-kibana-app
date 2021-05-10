@@ -15,6 +15,8 @@ export const configEquivalences = {
       'Change the default value of the Kibana timeFilter configuration',
     'checks.maxBuckets':
       'Change the default value of the Kibana max buckets configuration',
+  'checks.verbose_mode':
+    'Enabled or disable the text boxes that notify you when the health-check functions work',
   'extensions.pci': 'Enable or disable the PCI DSS tab on Overview and Agents.',
   'extensions.gdpr': 'Enable or disable the GDPR tab on Overview and Agents.',
   'extensions.audit': 'Enable or disable the Audit tab on Overview and Agents.',
@@ -78,6 +80,7 @@ export const nameEquivalence = {
   'checks.api': 'API connection',
   'checks.setup': 'API version',
   'checks.fields': 'Know fields',
+  'checks.verbose_mode': 'Verbose Mode',
   'checks.metaFields': 'Remove meta fields',
   'checks.timeFilter': 'Set time filter to 24h',
   'checks.maxBuckets': 'Set max buckets to 200000',
@@ -120,6 +123,7 @@ export const categoriesEquivalence = {
   'checks.api': HEALTH_CHECK,
   'checks.setup': HEALTH_CHECK,
   'checks.fields': HEALTH_CHECK,
+  'checks.verbose_mode': HEALTH_CHECK,
   'checks.metaFields': HEALTH_CHECK,
   'checks.timeFilter': HEALTH_CHECK,
   'checks.maxBuckets': HEALTH_CHECK,
@@ -161,6 +165,7 @@ export const formEquivalence = {
   'checks.api': { type: BOOLEAN },
   'checks.setup': { type: BOOLEAN },
   'checks.fields': { type: BOOLEAN },
+  'checks.verbose_mode': { type: BOOLEAN },
   'checks.metaFields': { type: BOOLEAN },
   'checks.timeFilter': { type: BOOLEAN },
   'checks.maxBuckets': { type: BOOLEAN },

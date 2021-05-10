@@ -141,6 +141,7 @@ export const WAZUH_DEFAULT_APP_CONFIG = {
   'checks.api': true,
   'checks.setup': true,
   'checks.fields': true,
+  'checks.verbose_mode': false,
   'checks.metaFields': true,
   'checks.maxBuckets': true,
   'checks.timeFilter': true,

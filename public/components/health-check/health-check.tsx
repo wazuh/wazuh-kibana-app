@@ -351,7 +351,8 @@ export class HealthCheck extends Component {
           fields
         );
         getToasts().remove(toast.id);
-        getToasts().addSuccess(`${pattern} index pattern created successfully`)
+        getToasts().addSuccess(`${pattern} index pattern created successfully`);
+        console.log("el modo verboso es: ", this.state.checks.verbose_mode);
         results[itemId].description = <span><EuiIcon type="check" color="secondary" ></EuiIcon> Ready</span>;
         this.setState({ results });
       } catch (error) {
@@ -383,6 +384,8 @@ export class HealthCheck extends Component {
       checks.api = configuration['checks.api'];
       checks.setup = configuration['checks.setup'];
       checks.fields = configuration['checks.fields'];
+      checks.verbose_mode = configuration['checks.verbose_mode'];
+      console.log("El modo verboso 1 es: ", checks.verbose_mode);
       const results = []
       results.push(
         {
