@@ -95,6 +95,8 @@ export class OverviewWelcome extends Component {
                       {this.buildTabCard('fim', 'filebeatApp')}
                       {this.props.extensions.aws &&
                         this.buildTabCard('aws', 'logoAWSMono')}
+                      {this.props.extensions.office &&
+                        this.buildTabCard('office', 'logoAWSMono')}
                       {this.props.extensions.gcp &&
                         this.buildTabCard('gcp', 'logoGCPMono')}
                     </EuiFlexGrid>
