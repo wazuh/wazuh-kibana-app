@@ -43,6 +43,7 @@ export class WzRequest {
       const timeout = configuration ? configuration.timeout : 20000;
 
       const url = getHttp().basePath.prepend(path);
+      
       const options = {
         method: method,
         headers: { 'Content-Type': 'application/json', 'kbn-xsrf': 'kibana' },

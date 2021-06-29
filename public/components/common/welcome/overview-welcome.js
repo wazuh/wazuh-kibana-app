@@ -31,6 +31,7 @@ import { updateCurrentTab } from '../../../redux/actions/appStateActions';
 import store from '../../../redux/store';
 import './welcome.scss';
 import { WAZUH_MODULES } from '../../../../common/wazuh-modules';
+import office_logo from '../../../assets/office365.svg';
 
 export class OverviewWelcome extends Component {
   constructor(props) {
@@ -96,7 +97,7 @@ export class OverviewWelcome extends Component {
                       {this.props.extensions.aws &&
                         this.buildTabCard('aws', 'logoAWSMono')}
                       {this.props.extensions.office &&
-                        this.buildTabCard('office', 'logoAWSMono')}
+                        this.buildTabCard('office', office_logo)}
                       {this.props.extensions.gcp &&
                         this.buildTabCard('gcp', 'logoGCPMono')}
                     </EuiFlexGrid>
