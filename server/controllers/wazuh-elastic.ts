@@ -695,8 +695,7 @@ export class WazuhElasticCtrl {
         }
       });
       const alertGenerateParams = request.body && request.body.params || {};
-
-      const sampleAlerts = WAZUH_SAMPLE_ALERTS_CATEGORIES_TYPE_ALERTS[request.params.category].map((typeAlert) => generateAlerts({ ...typeAlert, ...alertGenerateParams }, request.body.alerts || typeAlert.alerts || WAZUH_SAMPLE_ALERTS_DEFAULT_NUMBER_ALERTS)).flat();
+      const sampleAlerts = WAZUH_SAMPLE_ALERTS_CATEGORIES_TYPE_ALERTS[request.params.category].map((typeAlert) => generateAlerts({ ...typeAlert, ...alertGenerateParams }, request.body.alerts || typeAlert.alerts || WAZUH_SAMPLE_ALERTS_DEFAULT_NUMBER_ALERTS)).flat();   
       const bulk = sampleAlerts.map(sampleAlert => `${bulkPrefix}\n${JSON.stringify(sampleAlert)}\n`).join('');
 
       // Index alerts
