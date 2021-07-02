@@ -87,7 +87,7 @@ export class AgentsTable extends Component {
 
     this.setState({
       managerVersion: managerVersion.data.data.api_version,
-      agentActive: agentActive.data.data.totalItems,
+      agentActive: agentActive.data.data.total_affected_items,
       avaibleAgents: totalAgent.data.data.affected_items
     });
   }
@@ -116,11 +116,12 @@ export class AgentsTable extends Component {
   }
 
   async reloadAgents() {
-    // const totalAgent = await WzRequest.apiReq('GET', '/agents', {});
-    // this._isMount && this.setState({
-    //   isLoading: true,
-    //   avaibleAgents: totalAgent.data.data.items
-    // });
+    const totalAgent = await ActionAgents.getAllAgents(filtersToObject(this.state.filters));
+    this._isMount && this.setState({
+      isProcessing: true,
+      isLoading: true,
+      avaibleAgents: totalAgent
+    });
     await this.getItems();
     await this.props.reload();
   }
@@ -136,10 +137,10 @@ export class AgentsTable extends Component {
       this.setState({ filters: this.props.filters, pageIndex: 0 });
       this.props.removeFilters();
     }
-    // if (prevState.allSelected === false && this.state.allSelected === true) {
-    //   this._isMount && this.setState({ loadingAllItem: true });
-    //   this.getAllItems();
-    // }
+    if (prevState.allSelected === false && this.state.allSelected === true) {
+      this._isMount && this.setState({ loadingAllItem: true });
+      this.getAllItems();
+    }
   }
 
   async getItems() {
@@ -180,22 +181,16 @@ export class AgentsTable extends Component {
       sort: this.buildSortFilter()
     };
 
-    const rawAgents = await this.props.wzReq('GET', '/agents', filterTable);
+    const rawAgents = await ActionAgents.getAllAgents(filterTable);
+    const agentsFiltered = await ActionAgents.getAllAgents(filterTable);
+    if(agentsFiltered) this._isMount && this.setState({ loadingAllItem: false });
 
-    const agentsFiltered = await this.props
-      .wzReq('GET', '/agents', filterAll)
-      .then(() => {
-        this._isMount && this.setState({ loadingAllItem: false });
-      });
-
-    const formatedAgents = (
-      ((rawAgents || {}).data || {}).data || {}
-    ).items.map(this.formatAgent.bind(this));
+    const formatedAgents = (rawAgents || {}).map(this.formatAgent.bind(this));
     this._isMount &&
       this.setState({
-        agents: formatedAgents,
-        avaibleAgents: agentsFiltered.data.data.items,
-        totalItems: (((rawAgents || {}).data || {}).data || {}).totalItems,
+        selectedItems: formatedAgents,
+        avaibleAgents: (agentsFiltered || {}),
+        totalItems: (rawAgents || {}).length,
         isLoading: false
       });
   }
@@ -218,14 +213,14 @@ export class AgentsTable extends Component {
     const { sortField, sortDirection } = this.state;
 
     const field = sortField === 'os_name' ? 'os.name,os.version' : sortField;
-    const direction = sortDirection === 'asc' ? '+' : '-';
+    //const direction = sortDirection === 'asc' ? '+' : '-';
 
-    return direction + field;
+    return field;
   }
 
   buildQFilter() {
-    const { q } = this.state;
-    return q === '' ? `id!=000` : `id!=000;${q}`;
+    const { q } = this.state.filters;
+    return (!q || q==='') ? `id!=000` : `id!=000;${q}`;
   }
 
   formatAgent(agent) {
@@ -339,7 +334,7 @@ export class AgentsTable extends Component {
     this.props.reload();
   };
 
-  addUpgradeStatus(version, agent) {
+  addUpgradeStatus(agent) {
     const { managerVersion } = this.state;
     return (
       <CheckUpgrade
@@ -380,9 +375,8 @@ export class AgentsTable extends Component {
   /* MULTISELECT TABLE */
   onSelectionChange = selectedItems => {
     const { managerVersion, pageSize } = this.state;
-
     selectedItems.forEach(item => {
-      if (managerVersion > item.version && item.version !== '.') {
+      if (item.version && item.version !== '-' && !ActionAgents.compareVersions('v'+managerVersion, item.version)) {
         item.outdated = true;
       }
     });
@@ -404,12 +398,12 @@ export class AgentsTable extends Component {
       (selectedItems.length > 0 &&
         selectedItems.filter(item => item.upgrading).length > 0) ||
       (selectedItems.length > 0 &&
-        selectedItems.filter(item => item.status === 'Active').length === 0) ||
+        selectedItems.filter(item => item.status === 'active').length === 0) ||
       (selectedItems.length > 0 &&
-        selectedItems.filter(item => item.status === 'Active').length === 0 &&
-        selectedItems.filter(item => item.status === 'Disconnected').length >
+        selectedItems.filter(item => item.status === 'active').length === 0 &&
+        selectedItems.filter(item => item.status === 'disconnected').length >
         0) ||
-      selectedItems.filter(item => item.outdated && item.status === 'Active')
+      selectedItems.filter(item => item.outdated && item.status === 'active')
         .length === 0
     ) {
       return;
@@ -420,12 +414,12 @@ export class AgentsTable extends Component {
         <EuiButton
           color="secondary"
           iconType="sortUp"
-          onClick={this.onClickUpgrade}
+          onClick={() => ActionAgents.redirectActionAgents('upgrade', 'some', selectedItems)}
         >
           Upgrade{' '}
           {
             selectedItems.filter(
-              item => item.outdated && item.status === 'Active'
+              item => item.outdated && item.status === 'active'
             ).length
           }{' '}
           agents
@@ -436,13 +430,13 @@ export class AgentsTable extends Component {
 
   renderUpgradeButtonAll() {
     const { selectedItems, avaibleAgents, managerVersion } = this.state;
-
     if (
       selectedItems.length > 0 &&
+      avaibleAgents &&
       avaibleAgents.filter(
         agent =>
           agent.version !== 'Wazuh ' + managerVersion &&
-          agent.status === 'Active'
+          agent.status === 'active'
       ).length === 0
     ) {
       return;
@@ -453,7 +447,7 @@ export class AgentsTable extends Component {
         <EuiButton
           color="secondary"
           iconType="sortUp"
-          onClick={this.onClickUpgradeAll}
+          onClick={() => ActionAgents.redirectActionAgents('upgrade', 'all', selectedItems)}
         >
           Upgrade all agents
         </EuiButton>
@@ -466,7 +460,7 @@ export class AgentsTable extends Component {
 
     if (
       selectedItems.length === 0 ||
-      selectedItems.filter(item => item.status === 'Active').length === 0
+      selectedItems.filter(item => item.status === 'active').length === 0
     ) {
       return;
     }
@@ -476,10 +470,10 @@ export class AgentsTable extends Component {
         <EuiButton
           color="primary"
           iconType="refresh"
-          onClick={this.onClickRestart}
+          onClick={() => ActionAgents.redirectActionAgents('restart', 'some', selectedItems)}
         >
           Restart{' '}
-          {selectedItems.filter(item => item.status === 'Active').length} agents
+          {selectedItems.filter(item => item.status === 'active').length} agents
         </EuiButton>
       </EuiFlexItem>
     );
@@ -490,7 +484,8 @@ export class AgentsTable extends Component {
 
     if (
       (selectedItems.length > 0 &&
-        avaibleAgents.filter(item => item.status === 'Active').length === 0 &&
+        avaibleAgents &&
+        avaibleAgents.filter(item => item.status === 'active').length === 0 &&
         selectedItems.length === 0) ||
       agentActive === 0
     ) {
@@ -502,7 +497,7 @@ export class AgentsTable extends Component {
         <EuiButton
           color="primary"
           iconType="refresh"
-          onClick={this.onClickRestartAll}
+          onClick={() => ActionAgents.redirectActionAgents('restart', 'all', selectedItems)}
         >
           Restart all agents
         </EuiButton>
@@ -609,28 +604,6 @@ export class AgentsTable extends Component {
         : false;
     });
     this._isMount && this.setState(() => ({ agents }));
-  };
-
-  onClickUpgrade = () => {
-    const { selectedItems } = this.state;
-    ActionAgents.upgradeAgents(selectedItems);
-  };
-
-  onClickUpgradeAll = () => {
-    const { avaibleAgents, managerVersion } = this.state;
-    ActionAgents.upgradeAllAgents(avaibleAgents, managerVersion);
-  };
-
-  onClickRestart = () => {
-    const { selectedItems } = this.state;
-    ActionAgents.restartAgents(selectedItems);
-    this.reloadAgents();
-  };
-
-  onClickRestartAll = () => {
-    const { avaibleAgents } = this.state;
-    ActionAgents.restartAllAgents(avaibleAgents);
-    this.reloadAgents();
   };
 
   onClickPurge = () => {
@@ -760,8 +733,8 @@ export class AgentsTable extends Component {
         name: 'Version',
         width: '5%',
         truncateText: true,
-        sortable: true
-        /* render: (version, agent) => this.addUpgradeStatus(version, agent), */
+        sortable: true,
+        // render: this.addUpgradeStatus(agent)
       },
       {
         field: 'dateAdd',
@@ -902,7 +875,7 @@ export class AgentsTable extends Component {
 
     const selection = {
       selectable: agent => agent.id,
-      /* onSelectionChange: this.onSelectionChange */
+      onSelectionChange: this.onSelectionChange
     };
 
     return (
@@ -917,8 +890,8 @@ export class AgentsTable extends Component {
             loading={isLoading}
             rowProps={getRowProps}
             cellProps={getCellProps}
-            /*             isSelectable={false}
-                        selection={selection} */
+            isSelectable={false}
+            selection={selection} 
             noItemsMessage="No agents found"
             {...(pagination && { pagination })}
           />
@@ -979,7 +952,7 @@ export class AgentsTable extends Component {
             onCancel={() => {
               this.setState({ purgeModal: false });
             }}
-            onConfirm={allSelected ? this.onClickPurgeAll : this.onClickPurge}
+            onConfirm={allSelected ? () => ActionAgents.redirectActionAgents('delete', 'all', selectedItems) : () => ActionAgents.redirectActionAgents('delete', 'some', selectedItems)}
             cancelButtonText="No, don't do it"
             confirmButtonText="Yes, delete agents"
             defaultFocusedButton="confirm"
@@ -1008,7 +981,7 @@ export class AgentsTable extends Component {
         </EuiFlexGroup>
       );
     }
-
+    
     return (
       <div>
         {filter}
