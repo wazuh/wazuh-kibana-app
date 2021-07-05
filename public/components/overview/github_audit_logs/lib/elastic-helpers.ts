@@ -69,7 +69,6 @@ export async function getElasticAlerts(indexPattern, filterParams:IFilterParams,
   const search:SearchParams = {
     index: indexPattern['title'],
     body: {
-      size: 500,
       query,
       ...(aggs ? {aggs} : {}),
       ...kargs

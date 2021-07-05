@@ -43,6 +43,7 @@ import { withAgentSupportModule } from '../../../components/common/hocs';
 import { connect } from 'react-redux';
 import { compose } from 'redux';
 import { ModuleMitreAttackIntelligence } from '../../overview/mitre_attack_intelligence';
+import { GitGubInventorySection } from '../../overview/github_audit_logs';
 
 export class MainModuleAgent extends Component {
   props!: {
@@ -352,6 +353,7 @@ const ModuleTabViewer = compose(
       {section === 'sca' && selectView==='inventory' && <MainSca {...props} />}
       {section === 'mitre' && selectView === 'inventory' && <MainMitre {...props} />}
       {section === 'mitre' && selectView === 'intelligence' && <ModuleMitreAttackIntelligence {...props} />}
+      {section === 'github' && selectView === 'inventory' && <GitGubInventorySection {...props} />}
       {/* {['pci', 'gdpr', 'hipaa', 'nist', 'tsc'].includes(section) && selectView === 'inventory' && <ComplianceTable {...props} goToDiscover={(id) => props.onSelectedTabChanged(id)} />} */}
       {/* -------------------------------------------------------------------------- */}
     </>
