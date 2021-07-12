@@ -28,18 +28,22 @@ export class GenericRequest {
       const { timeout } = wazuhConfig.getConfig();
       const requestHeaders = {
         'Content-Type': 'application/json',
-        'kbn-xsrf': 'kibana'
+        'kbn-xsrf': 'kibana',
       };
       const tmpUrl = getHttp().basePath.prepend(path);
 
-      try{
-        requestHeaders.pattern = (await getDataPlugin().indexPatterns.get(AppState.getCurrentPattern())).title;
-      }catch(error){};
+      try {
+        requestHeaders.pattern = (
+          await getDataPlugin().indexPatterns.get(AppState.getCurrentPattern())
+        ).title;
+      } catch (error) {
+        throw new Error(`Error obtaining the current Index pattern: ${error}`);
+      }
 
       try {
         requestHeaders.id = JSON.parse(AppState.getCurrentAPI()).id;
       } catch (error) {
-        // Intended
+        //Intended
       }
       var options = {};
 
@@ -49,7 +53,7 @@ export class GenericRequest {
           method: method,
           headers: requestHeaders,
           url: tmpUrl,
-          timeout: timeout || 20000
+          timeout: timeout || 20000,
         };
       }
       if (method === 'PUT') {
@@ -58,7 +62,7 @@ export class GenericRequest {
           headers: requestHeaders,
           data: payload,
           url: tmpUrl,
-          timeout: timeout || 20000
+          timeout: timeout || 20000,
         };
       }
       if (method === 'POST') {
@@ -67,7 +71,7 @@ export class GenericRequest {
           headers: requestHeaders,
           data: payload,
           url: tmpUrl,
-          timeout: timeout || 20000
+          timeout: timeout || 20000,
         };
       }
       if (method === 'DELETE') {
@@ -76,15 +80,13 @@ export class GenericRequest {
           headers: requestHeaders,
           data: payload,
           url: tmpUrl,
-          timeout: timeout || 20000
+          timeout: timeout || 20000,
         };
       }
 
       Object.assign(data, await axios(options));
       if (!data) {
-        throw new Error(
-          `Error doing a request to ${tmpUrl}, method: ${method}.`
-        );
+        throw new Error(`Error doing a request to ${tmpUrl}, method: ${method}.`);
       }
 
       return data;
@@ -102,6 +104,7 @@ export class GenericRequest {
           if (!window.location.hash.includes('#/settings')) {
             window.location.href = getHttp().basePath.prepend('/app/wazuh#/health-check');
           }
+          throw new Error(`Current API is down: ${err}`);
         }
       }
       if (returnError) return Promise.reject(err);
